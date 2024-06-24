@@ -20,6 +20,14 @@ plots and RLE plots, for quality control of genes and region of interest
 provided in the package as well, with the ability to compute statistics for
 assessing the normalization/batch correction results.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/DavisLaboratory/standR}
+  \item Report bugs at \url{https://github.com/DavisLaboratory/standR/issues}
+}
+
+}
 \author{
 Ning Liu \email{liu.n@wehi.edu.au}
 }

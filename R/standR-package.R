@@ -32,7 +32,7 @@ NULL
 #' @aliases standR standR-package
 #' @keywords internal
 #'
-NULL
+"_PACKAGE"
 
 #' Description of the standR example datasets
 #'

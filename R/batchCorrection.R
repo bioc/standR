@@ -19,7 +19,7 @@ findNCGs <- function(spe, n_assay = 2, batch_name = "SlideName", top_n = 200) {
   stopifnot(n_assay <= length(SummarizedExperiment::assayNames(spe)))
   stopifnot(batch_name %in% colnames(colData(spe)))
   stopifnot(top_n <= nrow(spe))
-
+  
   # compute coefficient of variance for each batch
   gene_with_mzscore_list <- assay(spe, "logcounts") |>
     as.data.frame() |>
@@ -40,7 +40,7 @@ findNCGs <- function(spe, n_assay = 2, batch_name = "SlideName", top_n = 200) {
         column_to_rownames("rowname")
       sd <- apply(y, 1, stats::sd)
       m <- rowMeans(y)
-      cv <- log(100 * sqrt(exp(sd^2) - 1))
+      cv <- log(100 * sqrt(exp(sd^2) - 1) + 0.0001) # add a buffer to avoid -Inf from log(0)
       return(data.frame(cv))
     }) |>
     bind_cols()
