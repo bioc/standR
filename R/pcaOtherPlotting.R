@@ -34,7 +34,7 @@ expand.grid.rmdup <- function(x, y, include.equals = FALSE) {
 plotPairPCA <- function(spe_object, n_dimension = 3,
                         precomputed = NULL,
                         assay = 2, title = NA, title.size = 14, rmduplabs = FALSE, flipcoord = FALSE, 
-                        legend.pos = "top" ...) {
+                        legend.pos = "top", ...) {
   stopifnot(is.numeric(n_dimension))
 
   # compute PCA
