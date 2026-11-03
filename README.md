@@ -10,6 +10,12 @@ The standR package provides a series of functions to assist different stages of 
 
 ## Latest news
 
+### standR 1.17.6
+
+* Prepare SpatialDecon input from the existing `logcounts` assay on the linear
+  scale, or recompute linear CPM from raw counts with `recomputeCPM = TRUE`.
+  Expression and negative probes use matching background scaling.
+
 ### standR 1.17.3
 
 * Add `readGeoMxFromDcc()` to import DCC/PKC workflows directly into

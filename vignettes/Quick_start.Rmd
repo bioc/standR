@@ -193,20 +193,21 @@ drawPCA(spe, assay = 2, col = SlideName, shape = regions)
 
 # Data normalization
 
-As we observed the technical variations in the data in both RLE and PCA plots. 
-It is necessary to perform normalization in the data.
+The RLE and PCA plots show technical variation in the data, so we perform
+normalization before proceeding with downstream analyses.
 
 In the `standR` package, we offer normalization options including TMM, RPKM, 
-TPM, CPM, upperquartile and sizefactor. Among them, RPKM and TPM required gene 
-length information (add `genelength` column to the `rowData` of the object). 
-For TMM, upperquartile and sizefactor, their normalized factor will be stored 
-their `metadata`.
+TPM, CPM, upperquartile and sizefactor. Among them, RPKM and TPM require gene
+length information (add a `GeneLength` column to the `rowData` of the object).
+For TMM, upperquartile and sizefactor, the normalization factors are stored
+in `metadata`.
 
 Here we used TMM to normalize the data.
 
 ```{r}
 colData(spe)$biology <- paste0(colData(spe)$disease_status, "_", colData(spe)$regions)
 
+# By default, the normalized values are stored as log2 CPM in logcounts.
 spe_tmm <- geomxNorm(spe, method = "TMM")
 ```
 
@@ -259,7 +260,40 @@ plotRLExpr(spe_ruv, assay = 2, color = SlideName) + ggtitle("RUV4")
 ```
 
 
-**For more detailed analysis pipeline and usage of the standR package, please see https://github.com/DavisLaboratory/GeoMXAnalysisWorkflow**
+# Preparing inputs for cellular deconvolution
+
+The `prepareSpatialDecon` function prepares expression and background matrices
+for `SpatialDecon`. By default, it uses the existing `logcounts` assay and
+converts its log2 values to linear values, preserving the normalization or
+batch correction already applied. Negative probes must be retained in the
+selected assay so that expression and background receive the same transformation.
+
+```{r eval=FALSE}
+# Re-import with negative probes retained, and keep the ROIs and genes that passed QC.
+spe_decon <- readGeoMx(countFile, sampleAnnoFile, featureAnnoFile,
+                      rmNegProbe = FALSE)
+keep <- rownames(spe_decon) %in% rownames(spe) |
+  grepl("^NegProbe-WTX($|_)", rownames(spe_decon))
+spe_decon <- spe_decon[keep, colnames(spe)]
+spe_decon <- geomxNorm(spe_decon, method = "TMM")
+
+# Use the existing logcounts assay and return linear expression and background.
+spd <- prepareSpatialDecon(spe_decon)
+
+# Alternatively, recompute linear CPM from raw counts with matching background scaling.
+# This replaces any normalization or batch correction in logcounts.
+spd_cpm <- prepareSpatialDecon(spe_decon, recomputeCPM = TRUE)
+```
+
+For assays already on the linear scale, including output from
+`geomxNorm(log = FALSE)`, set `isLog = FALSE`. Raw negative probes stored only
+in `metadata(spe)$NegProbes` can be used with `recomputeCPM = TRUE`, but cannot
+reconstruct the background of an arbitrary corrected assay. Before using
+RUV4-corrected input, check that cell-type signals and the background model
+remain appropriate; converting to the linear scale alone does not validate
+the correction for deconvolution.
+
+**For a more detailed analysis pipeline and usage of the standR package, please see https://github.com/DavisLaboratory/GeoMXAnalysisWorkflow**
 
 
 # SessionInfo

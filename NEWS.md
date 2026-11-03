@@ -1,3 +1,12 @@
+# standR 1.17.6
+
+* Update `prepareSpatialDecon()` to convert the selected log2 assay to linear
+  expression by default, preserving its normalization or batch correction.
+  Add `isLog` for linear inputs and `recomputeCPM` to recompute linear CPM
+  from raw counts with matching negative-probe scaling. Raw metadata probes
+  now require recomputation or raw-count input rather than an independently
+  normalized background.
+
 # standR 1.17.4
 
 * Fix installed-package checks for the DCC importer tests and qualify

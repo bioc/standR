@@ -2,29 +2,59 @@
 % Please edit documentation in R/prepareDecon.R
 \name{prepareSpatialDecon}
 \alias{prepareSpatialDecon}
-\title{Preparing the inputs for SpatialDecon for doing deconvolution on spatial data}
+\title{Prepare expression and background matrices for SpatialDecon}
 \usage{
 prepareSpatialDecon(
   spe,
   assay2use = "logcounts",
   negProbeName = "NegProbe-WTX",
-  pool = NA
+  pool = NA,
+  recomputeCPM = FALSE,
+  isLog = identical(assay2use, "logcounts")
 )
 }
 \arguments{
 \item{spe}{SpatialExperiment object.}
 
-\item{assay2use}{The name of the assay to use. By default is logcounts.}
+\item{assay2use}{The assay to use when \code{recomputeCPM = FALSE}. Defaults to
+\code{"logcounts"}, preserving any normalization or batch correction in that assay.}
 
 \item{negProbeName}{The name of the negative probe gene. By default is NegProbe-WTX.}
 
-\item{pool}{A vector indicates the pools of the genes. This is required when there are more than one Negative Probes.}
+\item{pool}{A vector of probe pools aligned to the rows of \code{spe}. Required
+when different probe pools need separate background estimates. By default,
+all negative probes are averaged within each ROI.}
+
+\item{recomputeCPM}{Logical. If TRUE, recompute linear CPM from the \code{"counts"}
+assay, using the same library sizes for expression and negative probes.
+This replaces any normalization or batch correction in \code{assay2use}.
+Defaults to FALSE.}
+
+\item{isLog}{Logical. Whether the selected assay contains log2 values, which
+are converted to the linear scale using \code{2^x}. Defaults to TRUE for
+\code{assay2use = "logcounts"} and FALSE otherwise. Set to FALSE if the assay
+already contains linear values, including output from \code{geomxNorm(log = FALSE)}.
+Ignored when \code{recomputeCPM = TRUE}.}
 }
 \value{
-A list of two dataframes. The first data.frame is the normalised count, the second data.frame is the background for the data.
+A list containing two linear-scale matrices: \code{normCount} (expression)
+and \code{backGround} (expected background), with matching dimensions.
 }
 \description{
-Preparing the inputs for SpatialDecon for doing deconvolution on spatial data
+Prepare expression and background matrices for SpatialDecon
+}
+\details{
+SpatialDecon requires expression and background on the linear scale.
+By default, negative probes must be retained in the selected assay so they
+receive the same transformation as the expression data. Raw negative probes
+stored in \code{metadata(spe)$NegProbes} can be used with \code{recomputeCPM = TRUE},
+or with \verb{assay2use = "counts", isLog = FALSE}. They cannot reconstruct the
+background of an arbitrary normalized or batch-corrected assay.
+
+Converting log2 values with \code{2^x} retains any prior-count contribution from
+log-CPM normalization; it does not recover the original raw counts.
+Preparing batch-corrected input does not establish that correction preserves
+cell-type signals or that corrected negative probes adequately model background.
 }
 \examples{
 countFile <- data.frame(
@@ -40,6 +70,9 @@ sampleAnnoFile <- data.frame(
 
 spe <- readGeoMx(countFile, sampleAnnoFile, rmNegProbe = FALSE)
 
+# Use the existing logcounts assay, converting expression and background to linear values.
 out <- prepareSpatialDecon(spe)
+# Alternatively, recompute linear CPM from raw counts.
+out_cpm <- prepareSpatialDecon(spe, recomputeCPM = TRUE)
 
 }
